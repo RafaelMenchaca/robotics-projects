@@ -1,2 +1,1 @@
-# robotics-projects
-Learning Robotics with Arduino and AI
+My First Robotics Project
