@@ -1,29 +1,30 @@
 #include <DHT.h>
 
-#define DHTPIN 2       // Change if using a different pin
-#define DHTTYPE DHT11  // DHT11 sensor type
+#define DHTPIN 2       // DHT11 connected to Pin 2
+#define DHTTYPE DHT11  // Define sensor type as DHT11
 
-DHT dht(DHTPIN, DHTTYPE);
+DHT dht(DHTPIN, DHTTYPE);  // Initialize DHT sensor
 
 void setup() {
     Serial.begin(9600);
-    Serial.println("Testing DHT11 Sensor...");
     dht.begin();
 }
 
 void loop() {
-    delay(2000);  // Must wait at least 2 seconds between readings
+    float temperature = dht.readTemperature();  // Read temperature in Celsius
+    float humidity = dht.readHumidity();        // Read humidity
 
-    float temperature = dht.readTemperature();
-    float humidity = dht.readHumidity();
-
+    // Check if readings are valid
     if (isnan(temperature) || isnan(humidity)) {
-        Serial.println("⚠️ Failed to read from DHT sensor! Retrying...");
-    } else {
-        Serial.print("✅ Temperature: ");
-        Serial.print(temperature);
-        Serial.print(" °C  |  Humidity: ");
-        Serial.print(humidity);
-        Serial.println(" %");
+        Serial.println("Failed to read from DHT sensor!");
+        return;
     }
+
+    Serial.print("Temperature: ");
+    Serial.print(temperature);
+    Serial.print(" °C  |  Humidity: ");
+    Serial.print(humidity);
+    Serial.println(" %");
+
+    delay(2000);  // Wait 2 seconds before next reading
 }
