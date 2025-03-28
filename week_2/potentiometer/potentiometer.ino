@@ -11,7 +11,6 @@ void setup() {
 void loop() {
   potValue = analogRead(potPin);  // Read potentiometer (0-1023)
   brightness = map(potValue, 0, 1023, 0, 255);  // Scale to PWM range (0-255)
-  
   analogWrite(ledPin, brightness);  // Set LED brightness
   Serial.print("Potentiometer: ");
   Serial.print(potValue);
