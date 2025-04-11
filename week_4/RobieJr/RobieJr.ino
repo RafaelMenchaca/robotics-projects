@@ -1,5 +1,7 @@
 // --- Libraries ---
 #include <Servo.h> // Include the Servo library for controlling the ultrasonic sensor's servo motor
+#include <LiquidCrystal.h> // Include liquid crystal library for LCD
+
 
 // --- Motor A Pins ---
 const int enA = 6;  // Enable pin for Motor A (PWM)
@@ -20,10 +22,18 @@ const int servoPin = 7; // Control pin for the servo motor
 Servo scanner;          // Create a Servo object to control the scanner
 
 // --- Buzzer Pin ---
-const int buzzerPin = 10; // Control pin for the buzzer
+const int buzzerPin = 2; // Control pin for the buzzer
+
+// LCD on analog pins A0–A5
+LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);  // (RS, E, D4, D5, D6, D7)
+// LCD avoid glitch
+String lastLine1 = "";
+String lastLine2 = "";
 
 // --- Initial Setup ---
 void setup() {
+  delay(500); // Give power rails time to stabilize
+
   // Initialize motor control pins as outputs
   pinMode(enA, OUTPUT);
   pinMode(in1, OUTPUT);
@@ -39,6 +49,15 @@ void setup() {
   // Initialize buzzer pin as output
   pinMode(buzzerPin, OUTPUT);
 
+  // Initialize LCD
+  lcd.begin(16, 2);  // Set up the LCD (16 columns, 2 rows)
+  delay(5);
+  // Hello from LCD
+  lcd.setCursor(0, 0);
+  lcd.print("Robie Jr. Ready!");
+  delay(1500);
+  lcd.clear();
+
   // Attach the servo motor to its control pin
   scanner.attach(servoPin);
 
@@ -48,6 +67,7 @@ void setup() {
 
 // --- Main Loop ---
 void loop() {
+
   // Measure distance to the nearest object
   long distance = readDistance();
 
@@ -58,24 +78,29 @@ void loop() {
   if (distance > 0 && distance < 15) {
     // If an obstacle is detected within 15 cm:
     stopMotors();
+    lcdStatus("Obstacle!", "");
     delay(500);
     moveBackward();
+    lcdStatus("Moving", "Backward");
     delay(800);
     stopMotors();
     delay(500);
     String direction = scanAndChooseDirection();
     if (direction == "LEFT") {
       turnLeft();
-      delay(600);
+      lcdStatus("Turning", "Left");
+      delay(300);
     } else {
       turnRight();
-      delay(600);
+      lcdStatus("Turning", "Right");
+      delay(300);
     }
     stopMotors();
     delay(500);
   } else {
     // If path is clear, move forward
     moveForward();
+    lcdStatus("Moving", "Forward");
   }
 
   delay(100); // Short delay before the next loop iteration
@@ -183,4 +208,18 @@ void stopMotors() {
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
   digitalWrite(in4, LOW);
+}
+
+// Display status on LCD
+void lcdStatus(String line1, String line2) {
+  if (line1 != lastLine1 || line2 != lastLine2) {
+    lcd.clear();
+    delay(5);
+    lcd.setCursor(0, 0);
+    lcd.print(line1);
+    lcd.setCursor(0, 1);
+    lcd.print(line2);
+    lastLine1 = line1;
+    lastLine2 = line2;
+  }
 }
