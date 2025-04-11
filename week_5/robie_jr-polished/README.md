@@ -40,7 +40,7 @@ This version of Robie Jr. includes **fully refactored code**, **LCD feedback**, 
 
 ## 📸 Preview
 
-![Robie Jr.](../images/robie_jr_preview.jpg) *(Optional image)*
+![Robie Jr.](./images/robiejr.jpg)
 
 ---
 
