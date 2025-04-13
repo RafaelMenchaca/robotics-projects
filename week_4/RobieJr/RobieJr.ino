@@ -148,15 +148,15 @@ void controlBuzzer(long distance) {
 String scanAndChooseDirection() {
   long leftDist, rightDist;
 
-  // Look left
-  scanner.write(45);
-  delay(400);
-  leftDist = readDistance();
-
   // Look right
-  scanner.write(135);
+  scanner.write(0);
   delay(400);
   rightDist = readDistance();
+
+  // Look left
+  scanner.write(190);
+  delay(400);
+  leftDist = readDistance();
 
   // Return to center
   scanner.write(90);
@@ -188,18 +188,18 @@ void moveBackward() {
 
 // Turn the robot to the right
 void turnRight() {
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
-}
-
-// Turn the robot to the left
-void turnLeft() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
+}
+
+// Turn the robot to the left
+void turnLeft() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
 }
 
 // Stop both motors
