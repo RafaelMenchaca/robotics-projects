@@ -213,13 +213,18 @@ void stopMotors() {
 // Display status on LCD
 void lcdStatus(String line1, String line2) {
   if (line1 != lastLine1 || line2 != lastLine2) {
-    lcd.clear();
-    delay(5);
+    lcd.setCursor(0, 0);
+    lcd.print("                "); // Clear line manually
     lcd.setCursor(0, 0);
     lcd.print(line1);
+
+    lcd.setCursor(0, 1);
+    lcd.print("                "); // Clear line manually
     lcd.setCursor(0, 1);
     lcd.print(line2);
+
     lastLine1 = line1;
     lastLine2 = line2;
   }
 }
+
