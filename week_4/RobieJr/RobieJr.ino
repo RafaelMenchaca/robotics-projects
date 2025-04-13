@@ -30,9 +30,15 @@ LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);  // (RS, E, D4, D5, D6, D7)
 String lastLine1 = "";
 String lastLine2 = "";
 
+// LED as an eye on Robie Jr.
+const int eyeLed = 13; // LED eye on pin 13
+
 // --- Initial Setup ---
 void setup() {
   delay(500); // Give power rails time to stabilize
+
+  // Initialize led pin as output
+  pinMode(eyeLed, OUTPUT); // Add this in setup
 
   // Initialize motor control pins as outputs
   pinMode(enA, OUTPUT);
@@ -176,6 +182,7 @@ void moveForward() {
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
+  digitalWrite(eyeLed, HIGH);  // Eye ON when moving
 }
 
 // Move the robot backward
@@ -184,6 +191,7 @@ void moveBackward() {
   digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
+  digitalWrite(eyeLed, LOW);   // Eye OFF when backing up
 }
 
 // Turn the robot to the right
@@ -192,6 +200,7 @@ void turnRight() {
   digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
+  digitalWrite(eyeLed, LOW); // Optional during turning
 }
 
 // Turn the robot to the left
@@ -200,6 +209,7 @@ void turnLeft() {
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
+  digitalWrite(eyeLed, LOW); // Optional during turning
 }
 
 // Stop both motors
@@ -208,6 +218,7 @@ void stopMotors() {
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
   digitalWrite(in4, LOW);
+  digitalWrite(eyeLed, LOW); // Turn off eye when stopped
 }
 
 // Display status on LCD
@@ -225,6 +236,15 @@ void lcdStatus(String line1, String line2) {
 
     lastLine1 = line1;
     lastLine2 = line2;
+  }
+}
+
+void blinkEye(int times) {
+  for (int i = 0; i < times; i++) {
+    digitalWrite(eyeLed, HIGH);
+    delay(150);
+    digitalWrite(eyeLed, LOW);
+    delay(150);
   }
 }
 
