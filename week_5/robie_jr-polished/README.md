@@ -1,18 +1,19 @@
 # 🧠 Robie Jr. – Polished Version (Week 5)
 
-This version of Robie Jr. includes **fully refactored code**, **LCD feedback**, a **buzzer**, and **improved power handling**.
+This version of Robie Jr. includes **fully refactored code**, **LCD feedback**, a **buzzer**, **LED eye**, and **improved logic**.
 
 ---
 
 ## ✅ Features
 
 - 🚀 Clean & modular Arduino code
-- 🧠 Smart turning with servo scan
+- 🧠 Smart turning with servo scan (left/right comparison)
 - 🧱 Obstacle avoidance
-- 🗨️ LCD screen displays current action
-- 📢 Buzzer beeps based on obstacle distance
+- 🗨️ LCD screen displays current action (no flickering)
+- 👁️ LED eye lights up when moving forward
+- 📢 Buzzer beeps based on proximity
 - 🔋 Dual 9V battery support for motor + logic
-- ⚡ LCD glitch fixed (buzzer/servo timer conflict resolved)
+- ⚡ LCD glitch fixed (no random characters)
 
 ---
 
@@ -26,35 +27,41 @@ This version of Robie Jr. includes **fully refactored code**, **LCD feedback**, 
 | Ultrasonic Trig  | D12           |
 | Ultrasonic Echo  | D11           |
 | Buzzer           | D2            |
-| LCD1602 (Parallel) | A0–A5        |
+| LCD1602 (Parallel) | A0–A5       |
+| Eye LED          | D13           |
 
 ---
 
 ## 📝 Notes
 
-- Servo + tone() libraries can interfere with timers. Resolved by moving buzzer to **pin 2**
-- LCD glitch was caused by unstable USB power. Solved by using **dual 9V batteries**
-- Code uses `lcdStatus()` with string tracking to reduce unnecessary refreshes
+- Buzzer and servo conflict resolved by changing PWM pin usage
+- LCD bug fixed by switching to battery power (USB caused flickering)
+- LCD only updates when text changes (avoids flashing)
+- Turning logic now properly rotates 90 degrees toward safe path
 
 ---
 
 ## 📸 Preview
 
-![Robie Jr.](./images/robiejr.jpg)
+<p align="center">
+  <img src="./images/robiejr.jpg" alt="Robie Jr." width="400"/>
+</p>
 
 ---
 
-## 🔧 Improvements Planned
+## 🔧 Future Additions
 
-- 👀 LED eyes while moving
 - 🎭 Idle servo scan animation
-- 💬 Custom startup message
+- 💬 Personalized voice or greeting system
+- 🧠 Add IR sensors (Week 6)
+- 🎮 Remote control mode
 
 ---
 
 ## 🚀 How to Run
 
-1. Open `robie_jr-polished.ino` in the Arduino IDE
+1. Open `robie_jr-polished.ino` in Arduino IDE
 2. Upload to Arduino Uno
 3. Power Arduino with 9V battery
-4. Power L293D motor supply with second 9V battery
+4. Power motor circuit separately with second 9V battery
+5. Watch Robie Jr. come to life! 🤖

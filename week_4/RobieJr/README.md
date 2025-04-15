@@ -10,6 +10,9 @@ This was the **first functional version** of Robie Jr., an autonomous obstacle-a
 - Uses ultrasonic sensor to detect obstacles
 - Stops, reverses, and turns based on distance
 - Scans with a servo for smarter decisions
+- LCD displays current movement
+- LED "eye" glows while moving
+- Clean, smooth 90-degree turning
 
 ---
 
@@ -20,6 +23,9 @@ This was the **first functional version** of Robie Jr., an autonomous obstacle-a
 - L293D Motor Driver
 - Ultrasonic Sensor (HC-SR04)
 - Servo Motor (for scanning)
+- LCD 1602 (parallel)
+- LED (eye indicator on pin 13)
+- Buzzer (optional for testing)
 - Powered by 9V batteries
 
 ---
@@ -33,6 +39,8 @@ This was the **first functional version** of Robie Jr., an autonomous obstacle-a
 | Servo            | D7            |
 | Ultrasonic Trig  | D12           |
 | Ultrasonic Echo  | D11           |
+| LCD1602 (Parallel) | A0–A5        |
+| Eye LED          | D13           |
 
 ---
 
@@ -44,3 +52,5 @@ Robie Jr. moves forward, and when it detects an object within ~15 cm, it:
 3. Scans both directions with servo
 4. Turns toward the clearer path
 5. Continues forward
+
+The LCD displays Robie's status like "Moving Forward" or "Turning Left", and the LED eye lights up while driving forward.
