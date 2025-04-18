@@ -44,7 +44,7 @@ This version of Robie Jr. includes **fully refactored code**, **LCD feedback**, 
 ## 📸 Preview
 
 <p align="center">
-  <img src="./images/robiejr.jpg" alt="Robie Jr." width="250"/>
+  <img src="./robie_jr-polished/images/robiejr.jpg" alt="Robie Jr." width="250"/>
 </p>
 
 ---
