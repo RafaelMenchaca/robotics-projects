@@ -55,6 +55,3 @@ This version of Robie Jr. features an upgrade from the classic LCD to a sleek **
 
 Robie Jr. now reacts faster and displays clear feedback using an OLED. This update improves power handling, user feedback, and prepares the bot for more advanced sensors in the next stages.
 
----
-
-> ✅ Save and commit this file to: `week_6/RobieJr_oled/README.md`
