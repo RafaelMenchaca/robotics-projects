@@ -1,56 +1,50 @@
 // --- Libraries ---
-#include <Servo.h>             // Include the Servo library for controlling the ultrasonic sensor's servo motor
-// #include <LiquidCrystal.h>     // Include liquid crystal library for LCD
-// OLED libraries
+// Servo library to control the ultrasonic sensor's servo motor
+#include <Servo.h>             
+
+// OLED display libraries
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-// OLED settings
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define OLED_RESET    -1  // Reset pin not used
+// --- OLED Settings ---
+#define SCREEN_WIDTH 128        // OLED width in pixels
+#define SCREEN_HEIGHT 64        // OLED height in pixels
+#define OLED_RESET -1           // No reset pin used
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// --- Motor A Pins ---
-const int enA = 6;             // Enable pin for Motor A (PWM)
-const int in1 = 9;             // Control pin 1 for Motor A
-const int in2 = 8;             // Control pin 2 for Motor A
+// --- Motor A Pins (Left motor) ---
+const int enA = 6;              // PWM speed control for Motor A
+const int in1 = 9;              // Direction control pin 1
+const int in2 = 8;              // Direction control pin 2
 
-// --- Motor B Pins ---
-const int enB = 5;             // Enable pin for Motor B (PWM)
-const int in3 = 4;             // Control pin 1 for Motor B
-const int in4 = 3;             // Control pin 2 for Motor B
+// --- Motor B Pins (Right motor) ---
+const int enB = 5;              // PWM speed control for Motor B
+const int in3 = 4;              // Direction control pin 1
+const int in4 = 3;              // Direction control pin 2
 
 // --- Ultrasonic Sensor Pins ---
-const int trigPin = 12;        // Trigger pin for ultrasonic sensor
-const int echoPin = 11;        // Echo pin for ultrasonic sensor
+const int trigPin = 12;         // Ultrasonic trigger
+const int echoPin = 11;         // Ultrasonic echo return
 
-// --- Servo Motor Pin ---
-const int servoPin = 7;        // Control pin for the servo motor
-Servo scanner;                 // Create a Servo object to control the scanner
+// --- Servo Motor ---
+const int servoPin = 7;         // Controls ultrasonic scanning servo
+Servo scanner;                  // Servo instance
 
-// --- Buzzer Pin ---
-const int buzzerPin = 2;       // Control pin for the buzzer
+// --- Buzzer ---
+const int buzzerPin = 2;        // Output pin for buzzer
 
-// --- IR Sensor Pin ---
-const int irSensorPin = 10;    // Digital pin for IR obstacle sensor
+// --- IR Obstacle Sensor ---
+const int irSensorPin = 10;     // Digital output pin from IR sensor (LOW = obstacle)
 
-// --- LED as an eye ---
-const int eyeLed = 13;         // LED eye on pin 13
+// --- LED Eye ---
+const int eyeLed = 13;          // LED to simulate Robie Jr.'s "eye"
 
-// --- LCD on analog pins A0–A5 ---
-// LiquidCrystal lcd(A0, A1, A2, A3, A4, A5); // (RS, E, D4, D5, D6, D7)
-
-// LCD glitch prevention
-// String lastLine1 = "";
-// String lastLine2 = "";
-
-// --- Initial Setup ---
+// --- Setup ---
 void setup() {
-  delay(500); // Give power rails time to stabilize
+  delay(500); // Allow power rails to stabilize
 
-  // Initialize output pins
+  // --- Pin Modes ---
   pinMode(eyeLed, OUTPUT);
   pinMode(enA, OUTPUT);
   pinMode(in1, OUTPUT);
@@ -61,21 +55,12 @@ void setup() {
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   pinMode(buzzerPin, OUTPUT);
-  pinMode(irSensorPin, INPUT); // IR sensor as input
+  pinMode(irSensorPin, INPUT);  // IR sensor input
 
-  // // Setup LCD
-  // lcd.begin(16, 2);
-  // delay(5);
-  // lcd.setCursor(0, 0);
-  // lcd.print("Robie Jr. Ready!");
-  // delay(1500);
-  // lcd.clear();
-
-  // setup OLED
+  // --- OLED Initialization ---
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-  // Address 0x3C for 128x64
-  Serial.println(F("SSD1306 allocation failed"));
-  for (;;); // Don't proceed, loop forever
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;); // Freeze if OLED not found
   }
 
   display.clearDisplay();
@@ -87,21 +72,21 @@ void setup() {
   delay(1500);
   display.clearDisplay();
 
-  // Attach servo
+  // --- Attach Servo ---
   scanner.attach(servoPin);
 
-  // Set initial motor speeds
+  // --- Set Initial Motor Speed ---
   setMotorSpeed(170, 170);
 }
 
 // --- Main Loop ---
 void loop() {
-  long distance = readDistance();
-  bool irObstacle = digitalRead(irSensorPin) == LOW; // LOW = Obstacle detected
+  long distance = readDistance();                    // Measure ultrasonic distance
+  bool irObstacle = digitalRead(irSensorPin) == LOW; // IR sensor detects line (LOW = object detected)
 
-  controlBuzzer(distance);
+  controlBuzzer(distance);  // Buzzer sound logic based on distance
 
-  // IR Sensor takes priority
+  // --- IR Obstacle Detected (priority) ---
   if (irObstacle) {
     stopMotors();
     lcdStatus("IR Obstacle!", "");
@@ -112,7 +97,8 @@ void loop() {
     stopMotors();
     delay(500);
   }
-  // Ultrasonic obstacle avoidance
+
+  // --- Ultrasonic Obstacle Avoidance ---
   else if (distance > 0 && distance < 15) {
     stopMotors();
     lcdStatus("Obstacle!", "");
@@ -122,7 +108,7 @@ void loop() {
     delay(800);
     stopMotors();
     delay(500);
-    String direction = scanAndChooseDirection();
+    String direction = scanAndChooseDirection();  // Scan left and right
     if (direction == "LEFT") {
       turnLeft();
       lcdStatus("Turning", "Left");
@@ -134,31 +120,33 @@ void loop() {
     }
     stopMotors();
     delay(500);
-  } else {
+  }
+
+  // --- Move Forward ---
+  else {
     moveForward();
     lcdStatus("Moving", "Forward");
   }
 
-  delay(100);
+  delay(100); // Short delay between loops
 }
 
-// --- Function Definitions ---
-
+// --- Motor Speed Control ---
 void setMotorSpeed(int speedA, int speedB) {
   analogWrite(enA, speedA);
   analogWrite(enB, speedB);
 }
 
+// --- Ultrasonic Distance Reading ---
 long readDistance() {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH); delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   long duration = pulseIn(echoPin, HIGH);
-  return duration * 0.034 / 2;
+  return duration * 0.034 / 2;  // Convert to cm
 }
 
+// --- Buzzer Logic Based on Distance ---
 void controlBuzzer(long distance) {
   if (distance > 0 && distance < 5) {
     tone(buzzerPin, 1000);
@@ -171,29 +159,35 @@ void controlBuzzer(long distance) {
   }
 }
 
+// --- Smart Scanning with Servo ---
 String scanAndChooseDirection() {
   long leftDist, rightDist;
-  scanner.write(0);
+
+  scanner.write(0);   // Look right
   delay(400);
   rightDist = readDistance();
-  scanner.write(190);
+
+  scanner.write(190); // Look left
   delay(400);
   leftDist = readDistance();
-  scanner.write(90);
+
+  scanner.write(90);  // Return to center
   delay(300);
+
   return (rightDist > leftDist) ? "RIGHT" : "LEFT";
 }
 
+// --- Motor Movement Controls ---
 void moveForward() {
   digitalWrite(in1, HIGH); digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH); digitalWrite(in4, LOW);
-  digitalWrite(eyeLed, HIGH);
+  digitalWrite(eyeLed, HIGH);  // Eye ON
 }
 
 void moveBackward() {
   digitalWrite(in1, LOW); digitalWrite(in2, HIGH);
   digitalWrite(in3, LOW); digitalWrite(in4, HIGH);
-  digitalWrite(eyeLed, LOW);
+  digitalWrite(eyeLed, LOW);   // Eye OFF
 }
 
 void turnRight() {
@@ -214,6 +208,7 @@ void stopMotors() {
   digitalWrite(eyeLed, LOW);
 }
 
+// --- OLED Display Status Function ---
 void lcdStatus(String line1, String line2) {
   static String lastLine1 = "";
   static String lastLine2 = "";
@@ -230,9 +225,10 @@ void lcdStatus(String line1, String line2) {
   }
 }
 
+// --- Optional: LED Blink Effect for Personality ---
 void blinkEye(int times) {
   for (int i = 0; i < times; i++) {
     digitalWrite(eyeLed, HIGH); delay(150);
-    digitalWrite(eyeLed, LOW); delay(150);
+    digitalWrite(eyeLed, LOW);  delay(150);
   }
 }
