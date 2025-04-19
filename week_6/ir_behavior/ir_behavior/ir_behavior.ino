@@ -77,17 +77,25 @@ void loop() {
   delay(100);
 
 
-  bool onLine = digitalRead(irSensorPin) == HIGH;  // HIGH = black line
+ bool onLine = digitalRead(irSensorPin) == HIGH;  // HIGH = black line
+  static bool lastTurnLeft = true;  // Track last turn direction
 
   if (onLine) {
-    moveForward();  // Keep following the line
-    lcdStatus("Line Detected", "Moving on it...");
+    moveForward();
+    lcdStatus("Line Detected", "Following...");
+    delay(150);
   } else {
-    stopMotors();   // Stop if it loses the line
-    lcdStatus("NO LINE Detected", "Stop moving");
+    if (lastTurnLeft) {
+      turnRight();
+      lcdStatus("Line Lost", "Turning Right");
+    } else {
+      turnLeft();
+      lcdStatus("Line Lost", "Turning Left");
+    }
+    lastTurnLeft = !lastTurnLeft;  // Alternate turn direction
+    delay(250);
   }
 
-  delay(200);  // Short delay to stabilize output
 
 
   delay(50);  // Short pause for stability
@@ -103,6 +111,18 @@ void moveForward() {
   digitalWrite(in1, HIGH); digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH); digitalWrite(in4, LOW);
   digitalWrite(eyeLed, HIGH);
+}
+
+void turnRight() {
+  digitalWrite(in1, LOW); digitalWrite(in2, HIGH);
+  digitalWrite(in3, HIGH); digitalWrite(in4, LOW);
+  digitalWrite(eyeLed, LOW);
+}
+
+void turnLeft() {
+  digitalWrite(in1, HIGH); digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW); digitalWrite(in4, HIGH);
+  digitalWrite(eyeLed, LOW);
 }
 
 void stopMotors() {
