@@ -65,7 +65,7 @@ void setup() {
   delay(1500);
   display.clearDisplay();
 
-  setMotorSpeed(170, 170);
+  setMotorSpeed(120, 120);
 }
 
 // --- Main Loop ---
@@ -83,18 +83,24 @@ void loop() {
   if (onLine) {
     moveForward();
     lcdStatus("Line Detected", "Following...");
-    delay(150);
+    delay(300);  // Slight pause to prevent overreacting
   } else {
+    stopMotors();  // 🛑 Pause to give the sensor time
+    lcdStatus("Line Lost", "Pausing...");
+    delay(1000);    // Let the IR sensor stabilize
+
     if (lastTurnLeft) {
       turnRight();
-      lcdStatus("Line Lost", "Turning Right");
+      lcdStatus("Turning Right", "Searching...");
     } else {
       turnLeft();
-      lcdStatus("Line Lost", "Turning Left");
+      lcdStatus("Turning Left", "Searching...");
     }
-    lastTurnLeft = !lastTurnLeft;  // Alternate turn direction
-    delay(250);
+
+    lastTurnLeft = !lastTurnLeft;
+    delay(100);  // Hold turn briefly before next read
   }
+
 
 
 
@@ -114,16 +120,21 @@ void moveForward() {
 }
 
 void turnRight() {
+  analogWrite(enA, 115);  // Motor A slower
+  analogWrite(enB, 115);  // Motor B slower
   digitalWrite(in1, LOW); digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH); digitalWrite(in4, LOW);
   digitalWrite(eyeLed, LOW);
 }
 
 void turnLeft() {
+  analogWrite(enA, 115);
+  analogWrite(enB, 115);
   digitalWrite(in1, HIGH); digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW); digitalWrite(in4, HIGH);
+  digitalWrite(in3, LOW);  digitalWrite(in4, HIGH);
   digitalWrite(eyeLed, LOW);
 }
+
 
 void stopMotors() {
   digitalWrite(in1, LOW); digitalWrite(in2, LOW);
