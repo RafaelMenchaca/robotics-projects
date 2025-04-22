@@ -165,7 +165,11 @@ void stopMotors() {
   digitalWrite(in1, LOW); digitalWrite(in2, LOW);
   digitalWrite(in3, LOW); digitalWrite(in4, LOW);
   digitalWrite(eyeLed, LOW);
+
+  // 👀 Add idle animation
+  idleSweep();
 }
+
 
 long readDistance() {
   digitalWrite(trigPin, LOW);
@@ -213,3 +217,19 @@ void lcdStatus(String line1, String line2) {
     lastLine2 = line2;
   }
 }
+
+void idleSweep() {
+  for (int pos = 60; pos <= 120; pos += 5) {
+    scanner.write(pos);
+    delay(20);
+  }
+  for (int pos = 120; pos >= 60; pos -= 5) {
+    scanner.write(pos);
+    delay(20);
+  }
+
+  // 👁️ Return to center when done
+  scanner.write(90);
+  delay(200);
+}
+
