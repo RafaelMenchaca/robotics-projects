@@ -30,7 +30,7 @@ const int irRightPin  = A1;
 // --- Setup ---
 void setup() {
   delay(500);
-  Serial.begin(9600);
+  Serial.begin(9600);  // For sensor feedback and debugging
 
   // Motor pins
   pinMode(enA, OUTPUT);
@@ -56,48 +56,73 @@ void setup() {
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
-  display.println("Multi IR Test");
+  display.println("Robie Jr. Multi IR Ready");
   display.display();
   delay(1500);
   display.clearDisplay();
 
-  setMotorSpeed(150, 150);  // Adjust motor speed if needed
+  // Motor speed preset
+  setMotorSpeed(135, 135);  // Lower speed for smooth tracking
 }
 
 // --- Main Loop ---
 void loop() {
-  // 0 = Black detected | 1 = White surface
-  bool leftOnBlack   = digitalRead(irLeftPin)   == LOW;
-  bool centerOnBlack = digitalRead(irCenterPin) == LOW;
-  bool rightOnBlack  = digitalRead(irRightPin)  == LOW;
+  // Read all sensors: 1 = black, 0 = white
+  // Correct sensor logic by swapping labels in software
+  bool leftOnLine   = digitalRead(irRightPin);  // Right sensor is physically on the left
+  bool centerOnLine = digitalRead(irCenterPin);
+  bool rightOnLine  = digitalRead(irLeftPin);   // Left sensor is physically on the right
 
-  // Raw serial print (1 for white, 0 for black)
+
+  // Debug output to Serial Monitor
   Serial.print("Left: ");
-  Serial.print(digitalRead(irLeftPin));
+  Serial.print(leftOnLine);
   Serial.print(" | Center: ");
-  Serial.print(digitalRead(irCenterPin));
+  Serial.print(centerOnLine);
   Serial.print(" | Right: ");
-  Serial.println(digitalRead(irRightPin));
+  Serial.println(rightOnLine);
 
-  // --- Basic Line-Following IR Logic ---
-  if (centerOnBlack && !leftOnBlack && !rightOnBlack) {
+  // === Line Following Logic ===
+  if (centerOnLine && !leftOnLine && !rightOnLine) {
     moveForward();
     oledStatus("Following", "Line: Center");
   }
-  else if (leftOnBlack) {
+  else if (leftOnLine && !centerOnLine) {
     turnLeft();
     oledStatus("Adjusting", "Line: Left");
   }
-  else if (rightOnBlack) {
+  else if (rightOnLine && !centerOnLine) {
     turnRight();
     oledStatus("Adjusting", "Line: Right");
   }
-  else {
+  else if (leftOnLine && centerOnLine && rightOnLine) {
+    // all balck
+    moveForward();
+    oledStatus("Intersection", "Moving Forward");
+  }
+   else if (!leftOnLine && !centerOnLine && !rightOnLine) {
+    // All white = line lost
+    static bool turnLeftNext = true;
+
     stopMotors();
-    oledStatus("Line Lost", "Stopping...");
+    oledStatus("Line Lost", "Searching...");
+
+    delay(400);  // Short pause before searching
+
+    if (turnLeftNext) {
+      turnLeft();
+      oledStatus("Searching", "Turning Left");
+    } else {
+      turnRight();
+      oledStatus("Searching", "Turning Right");
+    }
+
+    delay(400);  // Turning time
+
+    turnLeftNext = !turnLeftNext;  // Alternate next turn direction
   }
 
-  delay(100);
+  delay(80);  // Loop delay for smoother response
 }
 
 // --- Motor Control ---
@@ -110,18 +135,21 @@ void moveForward() {
   digitalWrite(in1, HIGH); digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH); digitalWrite(in4, LOW);
   digitalWrite(eyeLed, HIGH);
+  delay(80);  // Small forward motion for control
 }
 
 void turnLeft() {
   digitalWrite(in1, HIGH); digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);  digitalWrite(in4, HIGH);
   digitalWrite(eyeLed, LOW);
+  delay(100);  // Deliberate correction
 }
 
 void turnRight() {
   digitalWrite(in1, LOW);  digitalWrite(in2, HIGH);
   digitalWrite(in3, HIGH); digitalWrite(in4, LOW);
   digitalWrite(eyeLed, LOW);
+  delay(100);  // Deliberate correction
 }
 
 void stopMotors() {
@@ -130,7 +158,7 @@ void stopMotors() {
   digitalWrite(eyeLed, LOW);
 }
 
-// --- OLED Helper ---
+// --- OLED Display Helper ---
 void oledStatus(String line1, String line2) {
   static String lastLine1 = "";
   static String lastLine2 = "";
@@ -146,3 +174,31 @@ void oledStatus(String line1, String line2) {
     lastLine2 = line2;
   }
 }
+
+
+
+
+
+// // Test to adjust IR sensor 
+// void setup() {
+//   Serial.begin(9600);
+//   pinMode(10, INPUT);
+//   pinMode(A0, INPUT);
+//   pinMode(A1, INPUT);
+
+// }
+//   // detects Wihte == 1
+//   // detects Black == 0
+// void loop() {
+//   int center = digitalRead(10);
+//   int right = digitalRead(A0);
+//   int left = digitalRead(A1);
+//   Serial.print("Left: ");
+//   Serial.print(digitalRead(left));
+//   Serial.print(" | Center: ");
+//   Serial.print(digitalRead(center));
+//   Serial.print(" | Right: ");
+//   Serial.println(digitalRead(right));
+  
+//   delay(200);
+// }
