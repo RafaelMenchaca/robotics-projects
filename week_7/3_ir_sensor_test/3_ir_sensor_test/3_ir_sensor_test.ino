@@ -65,49 +65,48 @@ void setup() {
   setMotorSpeed(135, 135);  // Lower speed for smooth tracking
 }
 
+
 // --- Main Loop ---
 void loop() {
   // Read all sensors: 1 = black, 0 = white
-  // Correct sensor logic by swapping labels in software
-  bool leftOnLine   = digitalRead(irRightPin);  // Right sensor is physically on the left
+  // Swap logic in software to match physical layout
+  bool leftOnLine   = digitalRead(irRightPin);  // Right sensor wired to left
   bool centerOnLine = digitalRead(irCenterPin);
-  bool rightOnLine  = digitalRead(irLeftPin);   // Left sensor is physically on the right
+  bool rightOnLine  = digitalRead(irLeftPin);   // Left sensor wired to right
 
-
-  // Debug output to Serial Monitor
-  Serial.print("Left: ");
-  Serial.print(leftOnLine);
-  Serial.print(" | Center: ");
-  Serial.print(centerOnLine);
-  Serial.print(" | Right: ");
-  Serial.println(rightOnLine);
+  // Debug output
+  Serial.print("Left: "); Serial.print(leftOnLine);
+  Serial.print(" | Center: "); Serial.print(centerOnLine);
+  Serial.print(" | Right: "); Serial.println(rightOnLine);
 
   // === Line Following Logic ===
   if (centerOnLine && !leftOnLine && !rightOnLine) {
     moveForward();
     oledStatus("Following", "Line: Center");
   }
-  else if (leftOnLine && !centerOnLine) {
+  else if (!centerOnLine && leftOnLine && !rightOnLine) {
+    // Soft adjust left if only left sensor sees the line
     turnLeft();
-    oledStatus("Adjusting", "Line: Left");
+    oledStatus("Adjusting", "Curve: Left");
   }
-  else if (rightOnLine && !centerOnLine) {
+  else if (!centerOnLine && !leftOnLine && rightOnLine) {
+    // Soft adjust right if only right sensor sees the line
     turnRight();
-    oledStatus("Adjusting", "Line: Right");
+    oledStatus("Adjusting", "Curve: Right");
   }
   else if (leftOnLine && centerOnLine && rightOnLine) {
-    // all balck
+    // All black = intersection
     moveForward();
     oledStatus("Intersection", "Moving Forward");
   }
-   else if (!leftOnLine && !centerOnLine && !rightOnLine) {
+  else if (!leftOnLine && !centerOnLine && !rightOnLine) {
     // All white = line lost
     static bool turnLeftNext = true;
 
     stopMotors();
     oledStatus("Line Lost", "Searching...");
 
-    delay(400);  // Short pause before searching
+    delay(300);  // Short pause
 
     if (turnLeftNext) {
       turnLeft();
@@ -117,13 +116,13 @@ void loop() {
       oledStatus("Searching", "Turning Right");
     }
 
-    delay(400);  // Turning time
-
-    turnLeftNext = !turnLeftNext;  // Alternate next turn direction
+    delay(400);  // Turning duration
+    turnLeftNext = !turnLeftNext;
   }
 
-  delay(80);  // Loop delay for smoother response
+  delay(70);  // Short delay for responsiveness
 }
+
 
 // --- Motor Control ---
 void setMotorSpeed(int speedA, int speedB) {
